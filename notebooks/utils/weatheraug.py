@@ -68,6 +68,7 @@ def generate_random_lines(imshape,slant,drop_length):
 
 def add_rain(image):
     imshape = image.shape
+    image = image.copy()
     slant_extreme=10
     slant= np.random.randint(-slant_extreme,slant_extreme)
     drop_length=20
@@ -112,7 +113,6 @@ def add_fog(image):
     image_HLS[:,:,1]=image_HLS[:,:,1]*0.8
     haze_list= generate_random_blur_coordinates(imshape,hw)
     for haze_points in haze_list:
-        print(haze_points, hw)
         image_HLS[:,:,1][image_HLS[:,:,1]>255]  = 255 ##Sets all values above 255 to 255
         image_HLS= add_blur(image_HLS, haze_points[0],haze_points[1], hw) ## adding all shadow polygons on empty mask, single 255 denotes only red channel
     image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
