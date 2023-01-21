@@ -84,41 +84,49 @@ def add_rain(image):
     image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
     return image_RGB
 
-def add_blur(image, x,y,hw):
-    image[y:y+hw, x:x+hw,1] = image[y:y+hw, x:x+hw,1]+1
-    image[:,:,1][image[:,:,1]>255]  = 255 ##Sets all values above 255 to 255
-    image[y:y+hw, x:x+hw,1] = cv2.blur(image[y:y+hw, x:x+hw,1] ,(10,10))
-    return image
-
 def generate_random_blur_coordinates(imshape,hw):
     blur_points=[]
-    midx= imshape[1]//2-hw-100
-    midy= imshape[0]//2-hw-100
+    midx= imshape[1]//2-2*hw
+    midy= imshape[0]//2-hw
     index=1
-    while(midx>-100 or midy>-100): ## radially generating coordinates
-        for i in range(250*index):
+    while(midx>-hw and midy>-hw):
+        for i in range(hw//10*index):
             x= np.random.randint(midx,imshape[1]-midx-hw)
             y= np.random.randint(midy,imshape[0]-midy-hw)
             blur_points.append((x,y))
-        midx-=250*imshape[1]//sum(imshape)
-        midy-=250*imshape[0]//sum(imshape)
+        midx-=3*hw*imshape[1]//sum(imshape)
+        midy-=3*hw*imshape[0]//sum(imshape)
         index+=1
     return blur_points
 
-def add_fog(image):
-    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS) ## Conversion to HLS
-    mask = np.zeros_like(image)
+def add_blur(image, x,y, hw, fog_coeff):
+    overlay= image.copy()
+    output= image.copy()
+    alpha= 0.08*fog_coeff
+    rad= hw//2
+    point=(x+hw//2, y+hw//2)
+    cv2.circle(overlay,point, int(rad), (255,255,255), -1)
+    cv2.addWeighted(overlay, alpha, output, 1 -alpha ,0, output)
+    return output
+
+
+def add_fog(image, coeff=-1):
+    if (coeff < 0.0 or coeff > 1.0) and coeff!=-1:
+        raise Exception("Fog strength coefficient should be between 0 and 1. You can use -1 for random coefficient.")
+    if coeff==-1:
+        coeff=random.uniform(0.1,0.5)
+
     imshape = image.shape
-    hw=100
-    image_HLS[:,:,1]=image_HLS[:,:,1]*0.8
-    haze_list= generate_random_blur_coordinates(imshape,hw)
+    hw=int(imshape[1]//3*coeff)
+    haze_list=generate_random_blur_coordinates(imshape,hw)
     for haze_points in haze_list:
-        image_HLS[:,:,1][image_HLS[:,:,1]>255]  = 255 ##Sets all values above 255 to 255
-        image_HLS= add_blur(image_HLS, haze_points[0],haze_points[1], hw) ## adding all shadow polygons on empty mask, single 255 denotes only red channel
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
+        image= add_blur(image, haze_points[0], haze_points[1], hw, coeff)
+    image = cv2.blur(image, (hw//10,hw//10))
+    image_RGB = image
+
     return image_RGB
 
-def noisy(noise_typ,image):
+def noisy(image, noise_typ):
    if noise_typ == "gauss":
       row,col,ch= image.shape
       mean = 0
