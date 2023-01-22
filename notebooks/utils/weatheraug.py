@@ -81,13 +81,18 @@ def generate_random_blur_coordinates(imshape, fog_coeff):
         blur_points.append((x,y))
     return blur_points
 
-def add_blur(image, x,y, hw, fog_coeff):
+def add_blur(image, x,y, hw, fog_coeff, type = 'fog'):
     overlay= image.copy()
     output= image.copy()
     alpha= 0.08*fog_coeff
     rad= hw//2
     point=(x+hw//2, y+hw//2)
-    cv2.circle(overlay, point, int(rad), (255,255,255), -1)
+    if type == 'fog':
+        color=(255, 255, 255)
+    else:
+        c = random.randint(20, 120)
+        color = (c, c, c)
+    cv2.circle(overlay, point, int(rad),  color, -1)
     cv2.addWeighted(overlay, alpha, output, 1-alpha ,0, output)
     return output
 
@@ -101,13 +106,28 @@ def add_fog(image, coeff=random.uniform(0.1, 0.8)):
     hw=int(imshape[1]//3*coeff)
     haze_list=generate_random_blur_coordinates(imshape,coeff)
     for haze_points in haze_list:
-        image= add_blur(image, haze_points[0], haze_points[1], hw, coeff)
+        image= add_blur(image, haze_points[0], haze_points[1], hw, coeff, 'fog')
     image = brighten(image, 0.1)
-    image = cv2.blur(image, (hw//10,hw//10))
+    image = cv2.blur(image, (hw//20,hw//20))
     image_RGB = image
 
     return image_RGB
 
+def add_smoke(image, coeff=random.uniform(0.1, 0.8)):
+
+    if (coeff < 0.0 or coeff > 1.0):
+        raise Exception("Fog strength coefficient should be between 0 and 1.")
+
+    imshape = image.shape
+    hw=int(imshape[1]//3*coeff)
+    haze_list=generate_random_blur_coordinates(imshape,coeff)
+    for haze_points in haze_list:
+        image= add_blur(image, haze_points[0], haze_points[1], hw, coeff, 'smoke')
+    image = brighten(image, 0.1)
+    image = cv2.blur(image, (hw//20,hw//20))
+    image_RGB = image
+
+    return image_RGB
 
 
 def noisy(image, noise_type='gaussian'):
