@@ -15,6 +15,8 @@ def change_light(image, coeff):
 def brighten(img, coeff = None):
     if coeff is None:
         coeff = random.uniform(0,1)
+    if coeff < 0:
+        raise Exception("Coefficient should be above zero. ")
     coeff += 1
     image_RGB = change_light(img, coeff)
     return image_RGB
@@ -23,7 +25,7 @@ def darken(img, coeff = None):
     if coeff is None:
         coeff = random.uniform(0, 1)
     if coeff<0:
-        raise Exception("Coefficient should be above zero")
+        raise Exception("Coefficient should be above zero. ")
     coeff= 1-coeff
     image_RGB = change_light(img, coeff)
     return image_RGB
