@@ -42,7 +42,7 @@ def add_snow(image):
     image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
     return image_RGB
 
-def generate_random_lines(imshape,slant,drop_length):
+def generate_random_lines(imshape, slant, drop_length):
     drops=[]
     for i in range(1500): ## If You want heavy rain, try increasing this
         if slant<0:
@@ -58,8 +58,8 @@ def add_rain(image):
     image = image.copy()
     slant_extreme=10
     slant= np.random.randint(-slant_extreme,slant_extreme)
-    drop_length=20
-    drop_width=2
+    drop_length=10
+    drop_width=1
     drop_color=(200,200,200) ## a shade of gray
     rain_drops= generate_random_lines(imshape,slant,drop_length)
     for rain_drop in rain_drops:
@@ -204,6 +204,3 @@ def add_weighted(im1, im2, alpha):
     beta = (1.0 - alpha)
     dst = cv2.addWeighted(im1, alpha, im2, beta, 0.0)
     return dst
-
-
-###################### RGB #############################
