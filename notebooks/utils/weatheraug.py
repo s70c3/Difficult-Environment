@@ -170,26 +170,6 @@ def add_sun_flare(image, flare_center=None, angle=None, src_radius=400, src_colo
     return image_RGB
 
 
-
-def fill(img, h, w):
-    img = cv2.resize(img, (h, w), cv2.INTER_CUBIC)
-    return img
-
-
-def horizontal_shift(img, ratio=0.0):
-    if ratio > 1 or ratio < 0:
-        print('Value should be less than 1 and greater than 0')
-        return img
-    ratio = random.uniform(-ratio, ratio)
-    h, w = img.shape[:2]
-    to_shift = w * ratio
-    if ratio > 0:
-        img = img[:, :int(w - to_shift), :]
-    if ratio < 0:
-        img = img[:, int(-1 * to_shift):, :]
-    img = fill(img, h, w)
-    return img
-
 def posture(im, n=8):
     indices = np.arange(0, 256)  # List of all colors
     divider = np.linspace(0, 255, n + 1)[1]  # we get a divider
