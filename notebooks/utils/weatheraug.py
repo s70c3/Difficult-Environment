@@ -72,19 +72,13 @@ def add_rain(image):
     return image_RGB
 
 
-def generate_random_blur_coordinates(imshape,hw):
+def generate_random_blur_coordinates(imshape, fog_coeff):
     blur_points=[]
-    midx= imshape[1]//2-2*hw
-    midy= imshape[0]//2-hw
-    index=1
-    while(midx>-hw and midy>-hw):
-        for i in range(hw//10*index):
-            x= np.random.randint(midx,imshape[1]-midx-hw)
-            y= np.random.randint(midy,imshape[0]-midy-hw)
-            blur_points.append((x,y))
-        midx-=3*hw*imshape[1]//sum(imshape)
-        midy-=3*hw*imshape[0]//sum(imshape)
-        index+=1
+    h, w = imshape[:2]
+    for i in range(int(250*fog_coeff)):
+        x= np.random.randint(0, w)
+        y= np.random.randint(0, h)
+        blur_points.append((x,y))
     return blur_points
 
 def add_blur(image, x,y, hw, fog_coeff):
@@ -93,26 +87,30 @@ def add_blur(image, x,y, hw, fog_coeff):
     alpha= 0.08*fog_coeff
     rad= hw//2
     point=(x+hw//2, y+hw//2)
-    cv2.circle(overlay,point, int(rad), (255,255,255), -1)
-    cv2.addWeighted(overlay, alpha, output, 1 -alpha ,0, output)
+    cv2.circle(overlay, point, int(rad), (255,255,255), -1)
+    # from utils.show  import show
+    # show(overlay)
+    cv2.addWeighted(overlay, alpha, output, 1-alpha ,0, output)
     return output
 
 
-def add_fog(image, coeff=-1):
-    if (coeff < 0.0 or coeff > 1.0) and coeff!=-1:
-        raise Exception("Fog strength coefficient should be between 0 and 1. You can use -1 for random coefficient.")
-    if coeff==-1:
-        coeff=random.uniform(0.1,0.5)
+def add_fog(image, coeff=random.uniform(0.1, 0.8)):
+
+    if (coeff < 0.0 or coeff > 1.0):
+        raise Exception("Fog strength coefficient should be between 0 and 1.")
 
     imshape = image.shape
     hw=int(imshape[1]//3*coeff)
-    haze_list=generate_random_blur_coordinates(imshape,hw)
+    haze_list=generate_random_blur_coordinates(imshape,coeff)
     for haze_points in haze_list:
         image= add_blur(image, haze_points[0], haze_points[1], hw, coeff)
+    image = brighten(image, 0.1)
     image = cv2.blur(image, (hw//10,hw//10))
     image_RGB = image
 
     return image_RGB
+
+
 
 def noisy(image, noise_type='gaussian'):
     if noise_type not in ['gaussian', 'poisson', 's&p', 'speckle']:
@@ -124,7 +122,7 @@ def noisy(image, noise_type='gaussian'):
 
 import math
 err_flare_circle_count="Numeric value between 0 and 20 is allowed"
-def add_sun_process(image, point, radius,src_color):
+def add_sun_process(image, point, radius, src_color):
     overlay= image.copy()
     output= image.copy()
     num_times=radius//10
@@ -152,7 +150,6 @@ def add_sun_flare(image, flare_center=None, angle=None, src_radius=400, src_colo
     output=add_sun_process(image, flare_center, src_radius, src_color)
     image_RGB = output
     return image_RGB
-
 
 
 
@@ -189,3 +186,6 @@ def add_weighted(im1, im2, alpha):
     beta = (1.0 - alpha)
     dst = cv2.addWeighted(im1, alpha, im2, beta, 0.0)
     return dst
+
+
+###################### RGB #############################
