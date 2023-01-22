@@ -88,8 +88,6 @@ def add_blur(image, x,y, hw, fog_coeff):
     rad= hw//2
     point=(x+hw//2, y+hw//2)
     cv2.circle(overlay, point, int(rad), (255,255,255), -1)
-    # from utils.show  import show
-    # show(overlay)
     cv2.addWeighted(overlay, alpha, output, 1-alpha ,0, output)
     return output
 
