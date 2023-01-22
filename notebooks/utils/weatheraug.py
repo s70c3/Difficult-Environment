@@ -2,45 +2,30 @@ import cv2
 import numpy as np
 import random
 
-def add_brightness(image):
-    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
-    ## Conversion to HLS
+def change_light(image, coeff):
+    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS) ## Conversion to HLS
     image_HLS = np.array(image_HLS, dtype = np.float64)
-    random_brightness_coefficient = np.random.uniform()+0.5
-    ## generates value between 0.5 and 1.5
-    image_HLS[:,:,1] = image_HLS[:,:,1]*random_brightness_coefficient
-    ## scale pixel values up or down for channel 1(Lightness)
-    image_HLS[:,:,1][image_HLS[:,:,1]>255]  = 255
-    ##Sets all values above 255 to 255
+    image_HLS[:,:,1] = image_HLS[:,:,1]*coeff ## scale pixel values up or down for channel 1(Lightness)
+    if(coeff>1):
+        image_HLS[:,:,1][image_HLS[:,:,1]>255]  = 255 ##Sets all values above 255 to 255
     image_HLS = np.array(image_HLS, dtype = np.uint8)
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB)
-    ## Conversion to RGB
+    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
     return image_RGB
 
-def generate_shadow_coordinates(imshape, no_of_shadows=1):
-    vertices_list=[]
-    for index in range(no_of_shadows):
-        vertex=[]
-        for dimensions in range(np.random.randint(3,15)):
-            ## Dimensionality of the shadow polygon
-            vertex.append(( imshape[1]*np.random.uniform(),imshape[0]//3+imshape[0]*np.random.uniform()))
-        vertices = np.array([vertex], dtype=np.int32)
-        ## single shadow vertices
-        vertices_list.append(vertices)
-    return vertices_list ## List of shadow vertices
+def brighten(img, coeff = None):
+    if coeff is None:
+        coeff = random.uniform(0,1)
+    coeff += 1
+    image_RGB = change_light(img, coeff)
+    return image_RGB
 
-def add_shadow(image,no_of_shadows=1):
-    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
-    ## Conversion to HLS
-    mask = np.zeros_like(image)
-    imshape = image.shape
-    vertices_list= generate_shadow_coordinates(imshape, no_of_shadows)
-    #3 getting list of shadow vertices
-    for vertices in vertices_list:
-        cv2.fillPoly(mask, vertices, 255) ## adding all shadow polygons on empty mask, single 255 denotes only red channel
-        image_HLS[:,:,1][mask[:,:,0]==255] = image_HLS[:,:,1][mask[:,:,0]==255]*0.5   ## if red channel is hot, image's "Lightness" channel's brightness is lowered
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB)
-    ## Conversion to RGB
+def darken(img, coeff = None):
+    if coeff is None:
+        coeff = random.uniform(0, 1)
+    if coeff<0:
+        raise Exception("Coefficient should be above zero")
+    coeff= 1-coeff
+    image_RGB = change_light(img, coeff)
     return image_RGB
 
 def add_snow(image):
@@ -83,6 +68,7 @@ def add_rain(image):
     image_HLS[:,:,1] = image_HLS[:,:,1]*brightness_coefficient ## scale pixel values down for channel 1(Lightness)
     image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
     return image_RGB
+
 
 def generate_random_blur_coordinates(imshape,hw):
     blur_points=[]
@@ -164,6 +150,7 @@ def add_sun_flare(image, flare_center=None, angle=None, src_radius=400, src_colo
     output=add_sun_process(image, flare_center, src_radius, src_color)
     image_RGB = output
     return image_RGB
+
 
 
 
