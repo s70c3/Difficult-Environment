@@ -185,9 +185,14 @@ def add_weighted(im1, im2, alpha):
     dst = cv2.addWeighted(im1, alpha, im2, beta, 0.0)
     return dst
 
+from compose import compose
 def random_aug(img, n=1):
-    from compose import compose
+
     all_funcs = [brighten, posture, darken, snow, rain, fog, smoke, noise, sun, posture]
     funcs = random.choices(all_funcs, k=n)
+    result = list(map(compose(*funcs), img))
+    return result
+
+def apply_func(img, funcs):
     result = list(map(compose(*funcs), img))
     return result
