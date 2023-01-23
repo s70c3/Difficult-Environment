@@ -30,7 +30,7 @@ def darken(img, coeff = None):
     image_RGB = change_light(img, coeff)
     return image_RGB
 
-def add_snow(image):
+def snow(image):
     image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
     ## Conversion to HLS
     image_HLS = np.array(image_HLS, dtype = np.float64)
@@ -53,7 +53,7 @@ def generate_random_lines(imshape, slant, drop_length):
         drops.append((x,y))
     return drops
 
-def add_rain(image):
+def rain(image):
     imshape = image.shape
     image = image.copy()
     slant_extreme=10
@@ -97,7 +97,7 @@ def add_blur(image, x,y, hw, fog_coeff, type = 'fog'):
     return output
 
 
-def add_fog(image, coeff=random.uniform(0.1, 0.8)):
+def fog(image, coeff=random.uniform(0.1, 0.8)):
 
     if (coeff < 0.0 or coeff > 1.0):
         raise Exception("Fog strength coefficient should be between 0 and 1.")
@@ -113,7 +113,7 @@ def add_fog(image, coeff=random.uniform(0.1, 0.8)):
 
     return image_RGB
 
-def add_smoke(image, coeff=random.uniform(0.1, 0.8)):
+def smoke(image, coeff=random.uniform(0.1, 0.8)):
 
     if (coeff < 0.0 or coeff > 1.0):
         raise Exception("Fog strength coefficient should be between 0 and 1.")
@@ -130,7 +130,7 @@ def add_smoke(image, coeff=random.uniform(0.1, 0.8)):
     return image_RGB
 
 
-def noisy(image, noise_type='gaussian'):
+def noise(image, noise_type='gaussian'):
     if noise_type not in ['gaussian', 'poisson', 's&p', 'speckle']:
         raise Exception('Noise type should be one of these: gaussian, poisson, s&p, speckle.')
     from skimage.util import random_noise
@@ -152,7 +152,7 @@ def add_sun_process(image, point, radius, src_color):
         cv2.addWeighted(overlay, alp, output, 1-alp ,0, output)
     return output
 
-def add_sun_flare(image, flare_center=None, angle=None, src_radius=400, src_color=(255,255,255)):
+def sun(image, flare_center=None, angle=None, src_radius=400, src_color=(255,255,255)):
     if angle:
         angle=angle%(2*math.pi)
 
@@ -184,3 +184,10 @@ def add_weighted(im1, im2, alpha):
     beta = (1.0 - alpha)
     dst = cv2.addWeighted(im1, alpha, im2, beta, 0.0)
     return dst
+
+def random_aug(img, n=1):
+    from compose import compose
+    all_funcs = [brighten, posture, darken, snow, rain, fog, smoke, noise, sun, posture]
+    funcs = random.choices(all_funcs, k=n)
+    result = list(map(compose(*funcs), img))
+    return result
