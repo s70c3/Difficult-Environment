@@ -14,7 +14,7 @@ def change_light(image, coeff):
 
 def brighten(img, coeff = None):
     if coeff is None:
-        coeff = random.uniform(0,1)
+        coeff = random.uniform(0,0.5)
     if coeff < 0:
         raise Exception("Coefficient should be above zero. ")
     coeff += 1
@@ -23,7 +23,7 @@ def brighten(img, coeff = None):
 
 def darken(img, coeff = None):
     if coeff is None:
-        coeff = random.uniform(0, 1)
+        coeff = random.uniform(0, 0.5)
     if coeff<0:
         raise Exception("Coefficient should be above zero. ")
     coeff= 1-coeff
@@ -64,8 +64,8 @@ def rain(image):
     rain_drops= generate_random_lines(imshape,slant,drop_length)
     for rain_drop in rain_drops:
         cv2.line(image,(rain_drop[0],rain_drop[1]),(rain_drop[0]+slant,rain_drop[1]+drop_length),drop_color,drop_width)
-    image= cv2.blur(image,(7,7)) ## rainy view are blurry
-    brightness_coefficient = 0.7 ## rainy days are usually shady
+    image= cv2.blur(image,(4,4)) ## rainy view are blurry
+    brightness_coefficient = 0.8 ## rainy days are usually shady
     image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS) ## Conversion to HLS
     image_HLS[:,:,1] = image_HLS[:,:,1]*brightness_coefficient ## scale pixel values down for channel 1(Lightness)
     image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB) ## Conversion to RGB
@@ -97,7 +97,7 @@ def add_blur(image, x,y, hw, fog_coeff, type = 'fog'):
     return output
 
 
-def fog(image, coeff=random.uniform(0.1, 0.8)):
+def fog(image, coeff=random.uniform(0.1, 0.5)):
 
     if (coeff < 0.0 or coeff > 1.0):
         raise Exception("Fog strength coefficient should be between 0 and 1.")
@@ -113,7 +113,7 @@ def fog(image, coeff=random.uniform(0.1, 0.8)):
 
     return image_RGB
 
-def smoke(image, coeff=random.uniform(0.1, 0.8)):
+def smoke(image, coeff=random.uniform(0.1, 0.5)):
 
     if (coeff < 0.0 or coeff > 1.0):
         raise Exception("Fog strength coefficient should be between 0 and 1.")
@@ -144,7 +144,7 @@ def add_sun_process(image, point, radius, src_color):
     overlay= image.copy()
     output= image.copy()
     num_times=radius//10
-    alpha= np.linspace(0.0, 0.8,num= num_times)
+    alpha= np.linspace(0.0, 0.5, num= num_times)
     rad= np.linspace(1,radius, num=num_times)
     for i in range(num_times):
         cv2.circle(overlay, point, int(rad[i]), src_color, -1)
@@ -152,7 +152,7 @@ def add_sun_process(image, point, radius, src_color):
         cv2.addWeighted(overlay, alp, output, 1-alp ,0, output)
     return output
 
-def sun(image, flare_center=None, angle=None, src_radius=400, src_color=(255,255,255)):
+def sun(image, flare_center=None, angle=None, src_radius=random.randint(200, 400), src_color=(255,255,255)):
     if angle:
         angle=angle%(2*math.pi)
 
@@ -170,7 +170,7 @@ def sun(image, flare_center=None, angle=None, src_radius=400, src_color=(255,255
     return image_RGB
 
 
-def posture(im, n=8):
+def posture(im, n=32):
     indices = np.arange(0, 256)  # List of all colors
     divider = np.linspace(0, 255, n + 1)[1]  # we get a divider
     quantiz = np.int0(np.linspace(0, 255, n))  # we get quantization colors
@@ -184,15 +184,3 @@ def add_weighted(im1, im2, alpha):
     beta = (1.0 - alpha)
     dst = cv2.addWeighted(im1, alpha, im2, beta, 0.0)
     return dst
-
-from compose import compose
-def random_aug(img, n=1):
-
-    all_funcs = [brighten, posture, darken, snow, rain, fog, smoke, noise, sun, posture]
-    funcs = random.choices(all_funcs, k=n)
-    result = list(map(compose(*funcs), img))
-    return result
-
-def apply_func(img, funcs):
-    result = list(map(compose(*funcs), img))
-    return result
