@@ -97,7 +97,7 @@ def add_blur(image, x,y, hw, fog_coeff, type = 'fog'):
     return output
 
 
-def fog(image, coeff=random.uniform(0.1, 0.5)):
+def fog(image, coeff=random.uniform(0.4, 0.7)):
 
     if (coeff < 0.0 or coeff > 1.0):
         raise Exception("Fog strength coefficient should be between 0 and 1.")
@@ -113,7 +113,7 @@ def fog(image, coeff=random.uniform(0.1, 0.5)):
 
     return image_RGB
 
-def smoke(image, coeff=random.uniform(0.1, 0.5)):
+def smoke(image, coeff=random.uniform(0.4, 0.7)):
 
     if (coeff < 0.0 or coeff > 1.0):
         raise Exception("Fog strength coefficient should be between 0 and 1.")
@@ -130,8 +130,11 @@ def smoke(image, coeff=random.uniform(0.1, 0.5)):
     return image_RGB
 
 
-def noise(image, noise_type='gaussian'):
-    if noise_type not in ['gaussian', 'poisson', 's&p', 'speckle']:
+def noise(image, noise_type=None):
+    noises = ['gaussian', 'poisson', 's&p', 'speckle']
+    if noise_type is None:
+        noise_type = random.choice(noises)
+    if noise_type not in noises:
         raise Exception('Noise type should be one of these: gaussian, poisson, s&p, speckle.')
     from skimage.util import random_noise
     noise_img = random_noise(image, mode=noise_type)
@@ -144,7 +147,7 @@ def add_sun_process(image, point, radius, src_color):
     overlay= image.copy()
     output= image.copy()
     num_times=radius//10
-    alpha= np.linspace(0.0, 0.5, num= num_times)
+    alpha= np.linspace(0.0, 0.8, num= num_times)
     rad= np.linspace(1,radius, num=num_times)
     for i in range(num_times):
         cv2.circle(overlay, point, int(rad[i]), src_color, -1)
