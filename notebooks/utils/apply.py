@@ -21,12 +21,15 @@ def apply_to_folder(base_dir, target_dir, n=2):
         img = cv2.imread(os.path.join(base_dir, filename))
         img_aug= random_aug([img], n=n)
         cv2.imwrite(os.path.join(target_dir, filename), img_aug)
-def apply_to_stereo(base_dir, target_dir, n=2):
+def apply_to_stereo(base_dir, target_dir, n=2, resize_size = None):
     import os
     d = os.listdir(os.path.join(base_dir, 'left'))
     for filename in d:
         img_l = cv2.imread(os.path.join(base_dir, 'left', filename))
         img_r = cv2.imread(os.path.join(base_dir, 'right', filename))
+        if resize_size is not None:
+            img_l = cv2.resize(img_l, resize_size)
+            img_r = cv2.resize(img_r, resize_size)
         img_l_aug, img_r_aug = random_aug([img_l, img_r], n=n)
         cv2.imwrite(os.path.join(target_dir, 'left', filename), img_l_aug)
         cv2.imwrite(os.path.join(target_dir, 'right', filename), img_r_aug)
