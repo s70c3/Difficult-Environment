@@ -25,6 +25,7 @@ def apply_to_stereo(base_dir, target_dir, n=2, resize_size = None):
     import os
     d = os.listdir(os.path.join(base_dir, 'left'))
     for filename in d:
+        print(filename)
         img_l = cv2.imread(os.path.join(base_dir, 'left', filename))
         img_r = cv2.imread(os.path.join(base_dir, 'right', filename))
         if resize_size is not None:
@@ -51,9 +52,15 @@ def regular_combine(first_dir, second_dir, target_dir, split = 0.5):
     import os
     import shutil
     d = os.listdir(os.path.join(first_dir, 'left'))
-    for i in range(int(len(d)*split)):
-        shutil.copyfile(os.path.join(first_dir, 'left', f'{i}.png'), os.path.join(target_dir, 'left', f'{i}.png'))
-        shutil.copyfile(os.path.join(first_dir, 'right', f'{i}.png'), os.path.join(target_dir, 'right', f'{i}.png'))
-    for i in range(int(len(d) * split), len(d)):
-        shutil.copyfile(os.path.join(second_dir, 'left', f'{i}.png'), os.path.join(target_dir, 'left', f'{i}.png'))
-        shutil.copyfile(os.path.join(second_dir, 'right', f'{i}.png'), os.path.join(target_dir, 'right', f'{i}.png'))
+    for i in range(int(len(d)*split*0.5)):
+        try:
+            shutil.copyfile(os.path.join(first_dir, 'left', f'{i}.png'), os.path.join(target_dir, 'left', f'{i}.png'))
+            shutil.copyfile(os.path.join(first_dir, 'right', f'{i}.png'), os.path.join(target_dir, 'right', f'{i}.png'))
+        except FileNotFoundError:
+            print("No file, ", i)
+    for i in range(int(len(d) * split)//2, len(d)//2):
+        try:
+            shutil.copyfile(os.path.join(second_dir, 'left', f'{i}.png'), os.path.join(target_dir, 'left', f'{i}.png'))
+            shutil.copyfile(os.path.join(second_dir, 'right', f'{i}.png'), os.path.join(target_dir, 'right', f'{i}.png'))
+        except FileNotFoundError:
+            print("No file, ", i)
